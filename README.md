@@ -44,9 +44,10 @@ More information on how to set this up here:
 
 https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
 
-## Demo
+## Demo Usage
 
 In order to deploy, you must comment out the `backend.tf` code, and deploy manually using CLI into your AWS Account.
+
 Once a `terraform.tfstate` is generated, you must copy the `.tfstate` file into S3 bucket state destination that you configured in the S3 backend in `backend.tf` and `main.tf` or reference the plan output to get the S3 bucket and DynamoDB table name.
 
 Once the file is copied, uncomment the commented code, remove the generated terraform files in your project:
@@ -55,8 +56,10 @@ Once the file is copied, uncomment the commented code, remove the generated terr
 rm rf .terraform*
 ```
 
-Next, run `terraform init` and `terraform plan`. If your local AWS Credentials have access to read from S3, the plan should succeed and should be reading the state from S3.
+Next, run `terraform init` and `terraform plan`. If your local AWS Credentials have access to read from S3, the plan should succeed and should be reading the state from S3. 
 
-Finally, to implement this in your GitHub Repository Actions, copy the plan outputs of the `apply_role_arn` and `plan_role_arn` values, and pass them as secrets to the reusable workflow `terraform-workflow.yaml`. See example on `Usage` section on how to set this up.
+Finally, to implement this in your GitHub Repository Actions, copy the plan outputs of the `apply_role_arn` and `plan_role_arn` values, and pass them as secrets to the reusable workflow `terraform-workflow.yaml`. See example on `Usage` section on how to set this up. 
+
+Ensure that the OIDC roles policies have read and write permissions to the S3 bucket accordingly. Otherwise you will recieve a S3 `403` error code.
 
 Enjoy!
