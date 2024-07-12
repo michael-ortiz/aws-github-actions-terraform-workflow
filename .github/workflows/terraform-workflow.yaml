@@ -66,6 +66,9 @@ jobs:
     needs: [validation]
     name: Terraform Plan
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.terraform_directory }}
     env:
       IS_ROLE_AUTHENTICATION: ${{ secrets.PLAN_IAM_ROLE_ARN != ''}}
       IS_CREDENTIALS_AUTHENTICATION: ${{secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != ''}}
