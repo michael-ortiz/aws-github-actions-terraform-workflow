@@ -36,6 +36,14 @@ jobs:
       # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
 
+## Manual Approval for Applies
+
+To use manual approvals, you must pass an `environment` input to the workflow and in GitHub, and configure and `Environment` in your reposiutory Settings. Ensure the name of the environemnt matches the name of the environment created on the settings page.
+
+More information on how to set this up here:
+
+https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
+
 ## Demo
 
 In order to deploy, you must comment out the `backend.tf` code, and deploy manually using CLI into your AWS Account.
