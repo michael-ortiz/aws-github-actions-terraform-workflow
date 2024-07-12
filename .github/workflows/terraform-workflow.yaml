@@ -1,4 +1,4 @@
-name: Terraform Workflow
+name: Terraform
 
 permissions:
   id-token: write
@@ -64,7 +64,7 @@ jobs:
 
   terraform-plan:
     needs: [validation]
-    name: Terraform Plan
+    name: Plan
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -107,7 +107,7 @@ jobs:
 
   terraform-apply:
     needs: [terraform-plan]
-    name: Terraform Apply
+    name: Apply
     if: (inputs.action == 'apply' || inputs.action == 'destroy')
     runs-on: ubuntu-latest
     environment:
