@@ -105,7 +105,8 @@ jobs:
   terraform-apply:
     needs: [terraform-plan]
     name: Terraform Apply
-    if: inputs.action == "apply" || inputs.action == "destroy"
+    if: (inputs.action == "apply" || inputs.action == "destroy")
+    
     runs-on: ubuntu-latest
     environment:
       name: ${{ inputs.environment }}
@@ -143,7 +144,7 @@ jobs:
           terraform_version: ${{ inputs.tf-version }}
 
       - name: Terraform Apply
-        if: inputs.action == "apply" || inputs.action == "destroy"
+        if: (inputs.action == "apply" || inputs.action == "destroy")
         run: |
           terraform ${{ inputs.action }} -auto-approve \
           -var "environment=${{ inputs.environment }}" \
