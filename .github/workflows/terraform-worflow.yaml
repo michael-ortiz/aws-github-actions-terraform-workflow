@@ -1,0 +1,134 @@
+name: Terraform Workflow
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        type: string
+        description: "Action (plan, apply, destroy)" # Plan is a always executed
+        required: false
+        default: "plan"
+      tf-version:
+        required: false
+        type: string
+        default: "latest"
+      environment:
+        required: true
+        type: string
+      aws-region:
+        required: true
+        type: string
+    secrets: # At least roles ARN or AWS credentials are required
+      PLAN_IAM_ROLE_ARN:
+        required: false
+      APPLY_IAM_ROLE_ARN:
+        required: false
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+        
+jobs:
+  validation:
+    name: Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate AWS Credentials Secrets
+        run: |
+          if [[ -z "${{ secrets.PLAN_IAM_ROLE_ARN }}" || -z "${{ secrets.APPLY_IAM_ROLE_ARN }}" ]]; then
+            echo "IAM Role ARNs not set, checking AWS credentials..."
+            if [[ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" || -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]]; then
+              echo "Error: Required AWS credentials or IAM Role ARNs are not set." >&2
+              exit 1
+            else
+              echo "AWS credentials are set."
+            fi
+          else
+            echo "IAM Role ARNs are set."
+          fi
+      - name: Validate Action
+        run: |
+          if [[ "${{ inputs.action }}" != "plan" && "${{ inputs.action }}" != "apply" && "${{ inputs.action }}" != "destroy" ]]; then
+            echo "Error: Invalid action. Valid actions are 'plan', 'apply' or 'destroy or empty for plan only.'." >&2
+            exit 1
+          fi
+
+  terraform-plan:
+    needs: [validation]
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        if: secrets.PLAN_IAM_ROLE_ARN
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.PLAN_IAM_ROLE_ARN }}
+          role-session-name: ${{ github.run_id }}-terraform-plan
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: true
+
+      - name: Configure AWS Credentials (Access Key & Secret Access Key)
+        if: secrets.AWS_ACCESS_KEY_ID && secrets.AWS_SECRET_ACCESS_KEY
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: true
+
+      - name: Terraform Init
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.tf-version }}
+
+      - name: Terraform Plan
+        run: terraform plan
+
+  terraform-apply:
+    needs: [terraform-plan]
+    name: Terraform Apply
+    if: ${{ inputs.action == "apply" || ${{ inputs.action == "destroy" }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        if: secrets.APPLY_IAM_ROLE_ARN
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.APPLY_IAM_ROLE_ARN }}
+          role-session-name: ${{ github.run_id }}-terraform-apply
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: true
+
+      - name: Configure AWS Credentials (Access Key & Secret Access Key)
+        if: secrets.AWS_ACCESS_KEY_ID && secrets.AWS_SECRET_ACCESS_KEY
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: true
+
+      - name: Terraform Init
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.tf-version }}
+
+      - name: Terraform Apply
+        if: ${{ inputs.action == "apply" || inputs.action == "destroy" }}
+        run: |
+          terraform ${{ inputs.action }} -auto-approve \
+          -var "environment=${{ inputs.environment }}" \
+          -var "aws_region=${{ inputs.aws-region }}"
