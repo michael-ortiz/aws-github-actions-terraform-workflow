@@ -22,7 +22,7 @@ name: Deploy IaC
 jobs:
   deploy:
     name: Terraform Deploy
-    uses: MichaelOrtiz/aws-github-actions-terraform-workflow/.github/workflows/terraform-workflow.yaml@v1
+    uses: michael-ortiz/aws-github-actions-terraform-workflow/.github/workflows/terraform-workflow.yaml@v1
     
     with:
       deploy: true
