@@ -26,7 +26,7 @@ on:
       terraform_directory:
         required: false
         type: string
-        default: ./
+        default: '.'
     secrets: # At least roles ARN or AWS credentials are required
       PLAN_IAM_ROLE_ARN:
         required: false
