@@ -28,6 +28,7 @@ jobs:
       tf-version: latest
       aws-region: us-east-1
       environment: production
+      terraform_vars: 'foo=bar,bar=foo'
     secrets:
       # Recommended
       PLAN_IAM_ROLE_ARN: ${{ secrets.PLAN_IAM_ROLE_ARN }}
