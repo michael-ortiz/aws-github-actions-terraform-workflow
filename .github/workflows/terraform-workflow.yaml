@@ -102,7 +102,7 @@ jobs:
   terraform-apply:
     needs: [terraform-plan]
     name: Terraform Apply
-    if: ${{ inputs.action == "apply" || ${{ inputs.action == "destroy" }}
+    if: ${{ inputs.action == "apply" || inputs.action == "destroy" }}
     runs-on: ubuntu-latest
     environment:
       name: ${{ inputs.environment }}
