@@ -69,12 +69,15 @@ jobs:
     needs: [validation]
     name: Terraform Plan
     runs-on: ubuntu-latest
+    env:
+      IS_ROLE_AUTHENTICATION: ${{ secrets.PLAN_IAM_ROLE_ARN != ''}}
+      IS_CREDENTIALS_AUTHENTICATION: ${{secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != ''}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials (OIDC)
-        if: secrets.PLAN_IAM_ROLE_ARN
+        if: env.IS_ROLE_AUTHENTICATION
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.PLAN_IAM_ROLE_ARN }}
@@ -83,7 +86,7 @@ jobs:
           mask-aws-account-id: true
 
       - name: Configure AWS Credentials (Access Key & Secret Access Key)
-        if: secrets.AWS_ACCESS_KEY_ID && secrets.AWS_SECRET_ACCESS_KEY
+        if: env.IS_CREDENTIALS_AUTHENTICATION
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -109,12 +112,15 @@ jobs:
     defaults:
       run:
         working-directory: ${{ inputs.terraform_directory }}
+    env:
+      IS_ROLE_AUTHENTICATION: ${{ secrets.APPLY_IAM_ROLE_ARN != ''}}
+      IS_CREDENTIALS_AUTHENTICATION: ${{secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != ''}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials (OIDC)
-        if: secrets.APPLY_IAM_ROLE_ARN
+        if: env.IS_ROLE_AUTHENTICATION
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.APPLY_IAM_ROLE_ARN }}
@@ -123,7 +129,7 @@ jobs:
           mask-aws-account-id: true
 
       - name: Configure AWS Credentials (Access Key & Secret Access Key)
-        if: secrets.AWS_ACCESS_KEY_ID && secrets.AWS_SECRET_ACCESS_KEY
+        if: env.IS_CREDENTIALS_AUTHENTICATION
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}

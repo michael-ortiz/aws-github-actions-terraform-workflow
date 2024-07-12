@@ -23,10 +23,8 @@ jobs:
   deploy:
     name: Terraform Deploy
     uses: michael-ortiz/aws-github-actions-terraform-workflow/.github/workflows/terraform-workflow.yaml@v1
-    
     with:
-      deploy: true
-      action: apply # Optional: plan, destroy
+      action: apply # Optional: plan, destroy, apply
       tf-version: latest
       aws-region: us-east-1
       environment: production
