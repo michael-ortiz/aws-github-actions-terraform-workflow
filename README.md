@@ -12,8 +12,6 @@ To configure you S3 Terraform Backend in AWS, use this module:
 
 https://github.com/michael-ortiz/terraform-aws-s3-terraform-state
 
-Enjoty!
-
 ## Usage
 
 ```yaml
@@ -37,3 +35,20 @@ jobs:
       # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
+
+## Demo
+
+In order to deploy, you must comment out the `backend.tf` code, and deploy manually using CLI into your AWS Account.
+Once a `terraform.tfstate` is generated, you must copy the `.tfstate` file into S3 bucket state destination that you configured in the S3 backend in `backend.tf` and `main.tf` or reference the plan output to get the S3 bucket and DynamoDB table name.
+
+Once the file is copied, uncomment the commented code, remove the generated terraform files in your project:
+
+```
+rm rf .terraform*
+```
+
+Next, run `terraform init` and `terraform plan`. If your local AWS Credentials have access to read from S3, the plan should succeed and should be reading the state from S3.
+
+Finally, to implement this in your GitHub Repository Actions, copy the plan outputs of the `apply_role_arn` and `plan_role_arn` values, and pass them as secrets to the reusable workflow `terraform-workflow.yaml`. See example on `Usage` section on how to set this up.
+
+Enjoy!
